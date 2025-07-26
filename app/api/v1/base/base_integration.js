@@ -38,7 +38,7 @@ const EXTERNAL_SERVICES = {
 
     // E-commerce Services
     inventory: {
-        baseURL: process.env.INVENTORY_SERVICE_URL || 'http://localhost:3001',
+        baseURL: process.env.INVENTORY_SERVICE_URL || 'http://products-ms:3002',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.INVENTORY_SERVICE_TOKEN}`
@@ -46,7 +46,7 @@ const EXTERNAL_SERVICES = {
     },
 
     customer: {
-        baseURL: process.env.CUSTOMER_SERVICE_URL || 'http://localhost:3002',
+        baseURL: process.env.CUSTOMER_SERVICE_URL || 'http://users-ms:3001',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.CUSTOMER_SERVICE_TOKEN}`
@@ -54,7 +54,7 @@ const EXTERNAL_SERVICES = {
     },
 
     notification: {
-        baseURL: process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3003',
+        baseURL: process.env.NOTIFICATION_SERVICE_URL || 'http://notifications-ms:3003',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.NOTIFICATION_SERVICE_TOKEN}`
@@ -80,7 +80,7 @@ const EXTERNAL_SERVICES = {
 
     // Analytics and Monitoring
     analytics: {
-        baseURL: process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3004',
+        baseURL: process.env.ANALYTICS_SERVICE_URL || 'http://sales-ms:3004',
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${process.env.ANALYTICS_SERVICE_TOKEN}`

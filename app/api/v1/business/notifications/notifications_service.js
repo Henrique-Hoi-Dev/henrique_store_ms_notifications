@@ -1,7 +1,7 @@
 const Notifications = require('./notifications_model');
-const AWSNotificationIntegration = require('../../Integration/aws_notification_integration');
-const { v4: uuidv4 } = require('uuid');
+const AWSNotificationIntegration = require('../../../../Integration/aws_notification_integration');
 const logger = require('../../../../utils/logger');
+const { v4: uuidv4 } = require('uuid');
 
 class NotificationsService {
     constructor() {

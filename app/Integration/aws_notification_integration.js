@@ -1,5 +1,5 @@
-const BaseIntegration = require('../base/base_integration');
-const logger = require('../../../utils/logger');
+const BaseIntegration = require('../api/v1/base/base_integration');
+const logger = require('../utils/logger');
 
 class AWSNotificationIntegration extends BaseIntegration {
     constructor() {

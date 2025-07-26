@@ -1,6 +1,6 @@
 const NotificationsService = require('./notifications_service');
 const BaseController = require('../../base/base_controller');
-const AWSNotificationIntegration = require('../../Integration/aws_notification_integration');
+const AWSNotificationIntegration = require('../../../../Integration/aws_notification_integration');
 const HttpStatus = require('http-status');
 
 class NotificationsController extends BaseController {
