@@ -1,6 +1,5 @@
 const NotificationsService = require('./notifications_service');
 const BaseController = require('../../base/base_controller');
-const AWSNotificationIntegration = require('../../../../Integration/aws_notification_integration');
 const HttpStatus = require('http-status');
 
 class NotificationsController extends BaseController {
@@ -11,19 +10,8 @@ class NotificationsController extends BaseController {
 
     async list(req, res, next) {
         try {
-            const { page, limit, status, type, user_id, category, is_active } = req.query;
-
-            const result = await this._notificationsService.list({
-                page,
-                limit,
-                status,
-                type,
-                user_id,
-                category,
-                is_active
-            });
-
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.list(req.query);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -31,9 +19,8 @@ class NotificationsController extends BaseController {
 
     async getById(req, res, next) {
         try {
-            const notification = await this._notificationsService.getById(req.params.id);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.getById(req.params.id);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -41,9 +28,8 @@ class NotificationsController extends BaseController {
 
     async getByNotificationId(req, res, next) {
         try {
-            const notification = await this._notificationsService.getByNotificationId(req.params.notificationId);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.getByNotificationId(req.params.notificationId);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -51,8 +37,8 @@ class NotificationsController extends BaseController {
 
     async create(req, res, next) {
         try {
-            const notification = await this._notificationsService.create(req.body);
-            res.status(HttpStatus.CREATED).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.create(req.body);
+            res.status(HttpStatus.status.CREATED).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -60,9 +46,8 @@ class NotificationsController extends BaseController {
 
     async update(req, res, next) {
         try {
-            const notification = await this._notificationsService.update(req.params.id, req.body);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.update(req.params.id, req.body);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -70,10 +55,8 @@ class NotificationsController extends BaseController {
 
     async updateStatus(req, res, next) {
         try {
-            const { status } = req.body;
-            const notification = await this._notificationsService.updateStatus(req.params.id, status);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.updateStatus(req.params.id, req.body);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -81,9 +64,8 @@ class NotificationsController extends BaseController {
 
     async softDelete(req, res, next) {
         try {
-            const notification = await this._notificationsService.softDelete(req.params.id);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json({ message: 'Notification deleted successfully' });
+            const data = await this._notificationsService.softDelete(req.params.id);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -91,12 +73,8 @@ class NotificationsController extends BaseController {
 
     async getNotificationsByUser(req, res, next) {
         try {
-            const { page, limit } = req.query;
-            const result = await this._notificationsService.getNotificationsByUser(req.params.userId, {
-                page,
-                limit
-            });
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.getNotificationsByUser(req.params.userId, req.query);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -104,11 +82,8 @@ class NotificationsController extends BaseController {
 
     async sendNotification(req, res, next) {
         try {
-            const notification = await this._notificationsService.getById(req.params.id);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-
-            const result = await this._notificationsService.sendNotification(notification);
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.sendNotification(req.params.id);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -116,22 +91,8 @@ class NotificationsController extends BaseController {
 
     async sendBulkNotifications(req, res, next) {
         try {
-            const { user_ids, user_emails, type, subject, content, template_id, template_data, category } = req.body;
-
-            // Criar notificações para cada user_id
-            const notifications = user_ids.map((user_id) => ({
-                user_id,
-                user_email: user_emails ? user_emails.find((email) => email) : null,
-                type,
-                subject,
-                content,
-                template_id,
-                template_data,
-                category
-            }));
-
-            const result = await this._notificationsService.sendBulkNotifications(notifications);
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.sendBulkNotifications(req.body);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -139,11 +100,8 @@ class NotificationsController extends BaseController {
 
     async retryFailedNotifications(req, res, next) {
         try {
-            const notification = await this._notificationsService.getById(req.params.id);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-
-            const result = await this._notificationsService.sendNotification(notification);
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.retryFailedNotifications();
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -151,8 +109,8 @@ class NotificationsController extends BaseController {
 
     async getPendingNotifications(req, res, next) {
         try {
-            const result = await this._notificationsService.getPendingNotifications();
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.getPendingNotifications();
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -160,8 +118,8 @@ class NotificationsController extends BaseController {
 
     async getNotificationStats(req, res, next) {
         try {
-            const result = await this._notificationsService.getNotificationStats();
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(result));
+            const data = await this._notificationsService.getNotificationStats();
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -169,9 +127,8 @@ class NotificationsController extends BaseController {
 
     async getIntegrationsHealth(req, res, next) {
         try {
-            const awsIntegration = new AWSNotificationIntegration();
-            const health = await awsIntegration.checkHealth();
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(health));
+            const data = await this._notificationsService.getIntegrationsHealth();
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -179,10 +136,8 @@ class NotificationsController extends BaseController {
 
     async getDeliveryStatus(req, res, next) {
         try {
-            const { messageId } = req.params;
-            const awsIntegration = new AWSNotificationIntegration();
-            const status = await awsIntegration.getDeliveryStatus(messageId);
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(status));
+            const data = await this._notificationsService.getDeliveryStatus(req.params);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }
@@ -190,9 +145,8 @@ class NotificationsController extends BaseController {
 
     async cancelNotification(req, res, next) {
         try {
-            const notification = await this._notificationsService.cancelNotification(req.params.id);
-            if (!notification) return next(this.notFound('NOTIFICATION_NOT_FOUND'));
-            res.status(HttpStatus.OK).json(this.parseKeysToCamelcase(notification));
+            const data = await this._notificationsService.cancelNotification(req.params.id);
+            res.status(HttpStatus.status.OK).json(this.parseKeysToCamelcase({ data }));
         } catch (err) {
             next(this.handleError(err));
         }

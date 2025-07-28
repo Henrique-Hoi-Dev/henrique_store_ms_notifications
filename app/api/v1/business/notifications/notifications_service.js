@@ -1,11 +1,12 @@
-const Notifications = require('./notifications_model');
-const AWSNotificationIntegration = require('../../../../Integration/aws_notification_integration');
+const NotificationsModel = require('./notifications_model');
+const AWSIntegration = require('../../../../providers/aws');
 const logger = require('../../../../utils/logger');
 const { v4: uuidv4 } = require('uuid');
 
 class NotificationsService {
     constructor() {
-        this.awsIntegration = new AWSNotificationIntegration();
+        this._notificationsModel = NotificationsModel;
+        this._awsIntegration = new AWSIntegration();
     }
 
     async list(filters = {}) {
@@ -21,7 +22,7 @@ class NotificationsService {
 
             const offset = (page - 1) * limit;
 
-            const { count, rows } = await Notifications.findAndCountAll({
+            const { count, rows } = await this._notificationsModel.findAndCountAll({
                 where,
                 order: [['created_at', 'DESC']],
                 limit: parseInt(limit),
@@ -45,7 +46,7 @@ class NotificationsService {
 
     async getById(id) {
         try {
-            return await Notifications.findByPk(id);
+            return await this._notificationsModel.findByPk(id);
         } catch (error) {
             logger.error('Error getting notification by ID:', error);
             throw new Error('FAILED_TO_GET_NOTIFICATION');
@@ -54,7 +55,7 @@ class NotificationsService {
 
     async getByNotificationId(notificationId) {
         try {
-            return await Notifications.findOne({
+            return await this._notificationsModel.findOne({
                 where: { notification_id: notificationId }
             });
         } catch (error) {
@@ -65,7 +66,7 @@ class NotificationsService {
 
     async create(notificationData) {
         try {
-            const notification = await Notifications.create({
+            const notification = await this._notificationsModel.create({
                 ...notificationData,
                 notification_id: uuidv4()
             });
@@ -82,7 +83,7 @@ class NotificationsService {
 
     async update(id, updateData) {
         try {
-            const notification = await Notifications.findByPk(id);
+            const notification = await this._notificationsModel.findByPk(id);
             if (!notification) return null;
 
             await notification.update(updateData);
@@ -95,7 +96,7 @@ class NotificationsService {
 
     async updateStatus(id, status) {
         try {
-            const notification = await Notifications.findByPk(id);
+            const notification = await this._notificationsModel.findByPk(id);
             if (!notification) return null;
 
             const updateData = { status };
@@ -116,7 +117,7 @@ class NotificationsService {
 
     async softDelete(id) {
         try {
-            const notification = await Notifications.findByPk(id);
+            const notification = await this._notificationsModel.findByPk(id);
             if (!notification) return null;
 
             await notification.destroy();
@@ -132,7 +133,7 @@ class NotificationsService {
             const { page = 1, limit = 10 } = options;
             const offset = (page - 1) * limit;
 
-            const { count, rows } = await Notifications.findAndCountAll({
+            const { count, rows } = await this._notificationsModel.findAndCountAll({
                 where: { user_id: userId, is_active: true },
                 order: [['created_at', 'DESC']],
                 limit: parseInt(limit),
@@ -219,7 +220,7 @@ class NotificationsService {
 
     async retryFailedNotifications() {
         try {
-            const failedNotifications = await Notifications.findAll({
+            const failedNotifications = await this._notificationsModel.findAll({
                 where: {
                     status: 'FAILED',
                     retry_count: { [require('sequelize').Op.lt]: 3 }
@@ -270,7 +271,7 @@ class NotificationsService {
 
     async getNotificationStats() {
         try {
-            const stats = await Notifications.findAll({
+            const stats = await this._notificationsModel.findAll({
                 attributes: [
                     'status',
                     'type',
@@ -297,7 +298,7 @@ class NotificationsService {
 
     async cancelNotification(id) {
         try {
-            const notification = await Notifications.findByPk(id);
+            const notification = await this._notificationsModel.findByPk(id);
             if (!notification) return null;
 
             // Só pode cancelar notificações pendentes
