@@ -12,11 +12,23 @@ const i18n = require('i18n');
 const middle = require('./middleware');
 const addRouters = require('./routers');
 const logger = require('../utils/logger');
-const pinoHttp = require('pino-http')({ logger: logger });
+
+// Middleware de logging personalizado para filtrar kube-probe
+const pinoHttp = require('pino-http')({
+    logger: logger,
+    customLogLevel: function (req, res, err) {
+        // Filtrar requisições do kube-probe para evitar logs excessivos
+        if (req.headers['user-agent']?.includes('kube-probe')) {
+            return 'silent'; // Não loga essas requisições
+        }
+        return 'info'; // Log normal para outras requisições
+    }
+});
 const csrf = require('csurf');
 const csrfProtection = csrf({
     cookie: true,
-    ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'DELETE', 'PATCH']
+    ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    ignorePaths: ['/health', '/v1/health'] // Ignorar endpoints de health check
 });
 
 const memoryStore = new session.MemoryStore();
